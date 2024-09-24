@@ -18,11 +18,8 @@
 
 - Mapstruct
 - Lombok
-- Spring Core
-- Spring MVC
-- Hibernate
+- Spring Boot
 - Liquibase
-- Tomcat 10.1.18
 
 ## Настройка и запуск:
 
