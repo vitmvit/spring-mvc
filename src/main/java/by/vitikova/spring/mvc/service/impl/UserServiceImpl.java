@@ -1,6 +1,7 @@
 package by.vitikova.spring.mvc.service.impl;
 
 import by.vitikova.spring.mvc.converter.UserConverter;
+import by.vitikova.spring.mvc.exception.EntityNotFoundException;
 import by.vitikova.spring.mvc.model.dto.UserDto;
 import by.vitikova.spring.mvc.model.dto.create.UserCreateDto;
 import by.vitikova.spring.mvc.model.dto.update.UserUpdateDto;
@@ -33,7 +34,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public UserDto findById(Long id) {
-        return userConverter.convert(userRepository.findById(id));
+        return userConverter.convert(userRepository.findById(id).orElseThrow(EntityNotFoundException::new));
     }
 
     /**
@@ -55,7 +56,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public UserDto create(UserCreateDto dto) {
-        return userConverter.convert(userRepository.create(userConverter.convert(dto)));
+        return userConverter.convert(userRepository.save(userConverter.convert(dto)));
     }
 
     /**
@@ -66,8 +67,8 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public UserDto update(UserUpdateDto dto) {
-        User user = userRepository.findById(dto.getId());
-        return userConverter.convert(userRepository.update(userConverter.merge(user, dto)));
+        User user = userRepository.findById(dto.getId()).orElseThrow(EntityNotFoundException::new);
+        return userConverter.convert(userRepository.save(userConverter.merge(user, dto)));
     }
 
     /**
