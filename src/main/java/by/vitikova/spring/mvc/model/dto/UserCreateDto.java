@@ -6,10 +6,13 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class UserDto {
+public class UserCreateDto {
 
-    private String id;
+    //    @NotBlank
+//    @Email
     private String login;
+
     private String passwordHash;
+    private String passwordHashConfirm;
     private RoleName role;
 }
