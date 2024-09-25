@@ -1,6 +1,11 @@
 server:
   port: 8080
 
+security:
+  jwt:
+    token:
+      secret-key: oojnvijfdnvnwjw;dh,ld,hd'l,hld'mr[g;rltr[lg[rl[rl[lrergyetgejvwovnwionikwmkwcmjfenvjnvownvw
+
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
@@ -8,11 +13,11 @@ spring:
     username: root
     password: root
   liquibase:
-    enabled: true
+    enabled: false
     change-log: changelog-master.xml
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:
