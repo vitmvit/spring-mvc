@@ -1,4 +1,4 @@
-package by.vitikova.spring.mvc.model.dto;
+package by.vitikova.spring.mvc.model.dto.auth;
 
 public record SignInDto(
         String login,

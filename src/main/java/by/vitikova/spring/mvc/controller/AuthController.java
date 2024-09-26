@@ -1,22 +1,20 @@
 package by.vitikova.spring.mvc.controller;
 
-import by.vitikova.spring.mvc.model.dto.JwtDto;
-import by.vitikova.spring.mvc.model.dto.SignInDto;
-import by.vitikova.spring.mvc.model.dto.SignUpCreateDto;
+import by.vitikova.spring.mvc.model.dto.auth.JwtDto;
+import by.vitikova.spring.mvc.model.dto.auth.SignInDto;
+import by.vitikova.spring.mvc.model.dto.auth.SignUpDto;
 import by.vitikova.spring.mvc.service.AuthService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.AllArgsConstructor;
-import lombok.extern.java.Log;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 /**
  * Контроллер для авторизации и аутентификации
  */
-@Log
 @RestController
 @AllArgsConstructor
-@RequestMapping("/api/v1/auth")
+@RequestMapping("/api/auth")
 public class AuthController {
 
     private final AuthService authService;
@@ -28,7 +26,7 @@ public class AuthController {
      * @return объект ResponseEntity с созданным пользователем типа UserDto и статусом OK
      */
     @PostMapping("/signUp")
-    public ResponseEntity<JwtDto> signUp(@RequestBody SignUpCreateDto dto) {
+    public ResponseEntity<JwtDto> signUp(@RequestBody SignUpDto dto) {
         return ResponseEntity.ok(authService.signUp(dto));
     }
 

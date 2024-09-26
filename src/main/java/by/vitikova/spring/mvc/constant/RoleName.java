@@ -1,4 +1,4 @@
-package by.vitikova.spring.mvc.model;
+package by.vitikova.spring.mvc.constant;
 
 import lombok.Getter;
 
@@ -7,9 +7,6 @@ import java.util.stream.Stream;
 @Getter
 public enum RoleName {
     ADMIN("ADMIN"),
-    SUPPORT("SUPPORT"),
-    VET("VET"),
-    EDITOR("EDITOR"),
     USER("USER");
 
     private final String role;

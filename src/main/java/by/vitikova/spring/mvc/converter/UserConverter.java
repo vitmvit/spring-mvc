@@ -1,8 +1,8 @@
 package by.vitikova.spring.mvc.converter;
 
-import by.vitikova.spring.mvc.model.dto.UserCreateDto;
 import by.vitikova.spring.mvc.model.dto.UserDto;
-import by.vitikova.spring.mvc.model.dto.UserUpdateDto;
+import by.vitikova.spring.mvc.model.dto.create.UserCreateDto;
+import by.vitikova.spring.mvc.model.dto.update.UserUpdateDto;
 import by.vitikova.spring.mvc.model.entity.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;

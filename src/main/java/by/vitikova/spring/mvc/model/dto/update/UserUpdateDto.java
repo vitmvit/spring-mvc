@@ -1,4 +1,4 @@
-package by.vitikova.spring.mvc.model.dto;
+package by.vitikova.spring.mvc.model.dto.update;
 
 import lombok.Getter;
 import lombok.Setter;

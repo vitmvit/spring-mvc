@@ -1,12 +1,12 @@
 package by.vitikova.spring.mvc.service.impl;
 
-import by.vitikova.spring.mvc.EntityNotFoundException;
-import by.vitikova.spring.mvc.InvalidJwtException;
 import by.vitikova.spring.mvc.config.TokenProvider;
 import by.vitikova.spring.mvc.converter.UserConverter;
-import by.vitikova.spring.mvc.model.dto.JwtDto;
-import by.vitikova.spring.mvc.model.dto.SignInDto;
-import by.vitikova.spring.mvc.model.dto.SignUpCreateDto;
+import by.vitikova.spring.mvc.exception.EntityNotFoundException;
+import by.vitikova.spring.mvc.exception.InvalidJwtException;
+import by.vitikova.spring.mvc.model.dto.auth.JwtDto;
+import by.vitikova.spring.mvc.model.dto.auth.SignInDto;
+import by.vitikova.spring.mvc.model.dto.auth.SignUpDto;
 import by.vitikova.spring.mvc.model.entity.User;
 import by.vitikova.spring.mvc.service.AuthService;
 import by.vitikova.spring.mvc.service.UserService;
@@ -45,7 +45,7 @@ public class AuthServiceImpl implements AuthService {
      * @return объект JwtDto, содержащий JWT-токен
      */
     @Transactional
-    public JwtDto signUp(SignUpCreateDto dto) {
+    public JwtDto signUp(SignUpDto dto) {
         if (!dto.password().equals(dto.passwordConfirm())) {
             throw new InvalidJwtException(PASSWORD_ERROR);
         }
