@@ -1,12 +1,11 @@
 package by.vitikova.spring.mvc.model.entity;
 
-import by.vitikova.spring.mvc.model.RoleName;
+import by.vitikova.spring.mvc.constant.RoleName;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.experimental.FieldNameConstants;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -14,7 +13,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
-import static by.vitikova.spring.mvc.constant.Constant.*;
+import static by.vitikova.spring.mvc.constant.Constant.ADMIN_ROLE;
+import static by.vitikova.spring.mvc.constant.Constant.USER_ROLE;
 
 /**
  * Модель пользователя
@@ -55,16 +55,6 @@ public class User implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         if (this.role == RoleName.ADMIN) {
             return List.of(new SimpleGrantedAuthority(ADMIN_ROLE), new SimpleGrantedAuthority(USER_ROLE));
-        }
-        if (this.role == RoleName.SUPPORT) {
-            return List.of(new SimpleGrantedAuthority(SUPPORT_ROLE), new SimpleGrantedAuthority(USER_ROLE));
-        }
-        if (this.role == RoleName.VET) {
-            return List.of(new SimpleGrantedAuthority(VET_ROLE), new SimpleGrantedAuthority(USER_ROLE));
-        }
-
-        if (this.role == RoleName.EDITOR) {
-            return List.of(new SimpleGrantedAuthority(EDITOR_ROLE), new SimpleGrantedAuthority(USER_ROLE));
         }
         return List.of(new SimpleGrantedAuthority(USER_ROLE));
     }

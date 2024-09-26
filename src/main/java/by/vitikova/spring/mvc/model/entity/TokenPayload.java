@@ -1,7 +1,8 @@
-package by.vitikova.discovery.model.entity;
+package by.vitikova.spring.mvc.model.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
@@ -9,6 +10,7 @@ import lombok.Setter;
  */
 @Setter
 @Getter
+@NoArgsConstructor
 @AllArgsConstructor
 public class TokenPayload {
 

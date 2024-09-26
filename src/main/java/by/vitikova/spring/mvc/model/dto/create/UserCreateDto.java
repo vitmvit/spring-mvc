@@ -1,6 +1,6 @@
-package by.vitikova.spring.mvc.model.dto;
+package by.vitikova.spring.mvc.model.dto.create;
 
-import by.vitikova.spring.mvc.model.RoleName;
+import by.vitikova.spring.mvc.constant.RoleName;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,8 +8,6 @@ import lombok.Setter;
 @Setter
 public class UserCreateDto {
 
-    //    @NotBlank
-//    @Email
     private String login;
 
     private String passwordHash;

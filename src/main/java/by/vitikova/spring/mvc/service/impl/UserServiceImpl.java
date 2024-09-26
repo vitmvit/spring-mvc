@@ -1,13 +1,15 @@
-package by.vitikova.spring.mvc.service;
+package by.vitikova.spring.mvc.service.impl;
 
-import by.vitikova.spring.mvc.EntityNotFoundException;
-import by.vitikova.spring.mvc.InvalidJwtException;
 import by.vitikova.spring.mvc.converter.UserConverter;
-import by.vitikova.spring.mvc.model.dto.UserCreateDto;
+import by.vitikova.spring.mvc.exception.EntityNotFoundException;
+import by.vitikova.spring.mvc.exception.InvalidJwtException;
+import by.vitikova.spring.mvc.model.dto.create.UserCreateDto;
 import by.vitikova.spring.mvc.model.dto.UserDto;
-import by.vitikova.spring.mvc.model.dto.UserUpdateDto;
+import by.vitikova.spring.mvc.model.dto.update.UserUpdateDto;
 import by.vitikova.spring.mvc.model.entity.User;
 import by.vitikova.spring.mvc.repository.UserRepository;
+import by.vitikova.spring.mvc.service.UserService;
+import by.vitikova.spring.mvc.util.TokenUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +24,12 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final UserConverter userConverter;
+    private final TokenUtil tokenUtil;
+
+    @Override
+    public UserDto findCurrentUser(String auth) {
+        return userConverter.convert(userRepository.findByLogin(tokenUtil.getUsername(auth)).orElseThrow(EntityNotFoundException::new));
+    }
 
     @Override
     public UserDto findById(Long id) {
