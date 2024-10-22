@@ -13,13 +13,22 @@
    Spring Boot.
 5. Внесите изменения в конфигурацию для работы с базой данных. Вместо SessionFactory должен использоваться
    EntityManager.
+6. Реализовать авторизацию, с возможностью иметь несколько ролей для одного пользователя.
+7. Все CRUD-операции должны быть доступны только пользователю с ролью admin по url: /admin/. Добавление/изменение юзера
+   должно быть с ролями за один запрос.
+8. Пользователь с ролью user имеет доступ только по своему url /user и получать данные только о себе. Доступ к этому url
+   должен быть только у пользователей с ролью user и admin. Не забывайте про несколько ролей у пользователя!
+9. Настройте logout с любого url
 
 ## Технологии:
 
 - Mapstruct
 - Lombok
-- Spring Boot
 - Liquibase
+- Spring Boot
+- Spring Security
+- Spring MVC
+- Spring Data
 
 ## Настройка и запуск:
 
@@ -28,7 +37,89 @@
 
 ## Реализация
 
+### AuthController
+
+#### POST ResponseEntity<JwtDto> signUp(@RequestBody SignUpDto dto):
+
+Request:
+
+```http request
+http://localhost:8080/api/auth/signUp
+```
+
+Body:
+
+```json
+{
+  "login": "user4@mail.com",
+  "passwordHash": "user4@mail.com",
+  "passwordHashConfirm": "user4@mail.com",
+  "roleList": [
+    {
+      "name": "USER"
+    }
+  ]
+}
+```
+
+Response:
+
+```json
+{
+  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyNEBtYWlsLmNvbSIsInVzZXJuYW1lIjoidXNlcjRAbWFpbC5jb20iLCJyb2xlIjpbIlVTRVIiXSwiZXhwIjoxNzI3NTg5NjY5fQ.PsAdxWQEG3RHvQ4k1WcxQ6cdjdZSMHXy3y7MAriiZKU"
+}
+```
+
+#### POST ResponseEntity<JwtDto> signIn(@RequestBody SignInDto dto):
+
+Request:
+
+```http request
+http://localhost:8080/api/auth/signIn
+```
+
+Body:
+
+```json
+{
+  "login": "user4@mail.com",
+  "passwordHash": "user4@mail.com"
+}
+```
+
+Response:
+
+```json
+{
+  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyNEBtYWlsLmNvbSIsInVzZXJuYW1lIjoidXNlcjRAbWFpbC5jb20iLCJyb2xlIjpbIkFETUlOIl0sImV4cCI6MTcyNzU4OTc1M30.RIK-ouYj9Ro3DFvpfm-Jft4S8Ugs-9DjWoCKgk8tTPM"
+}
+```
+
+#### POST ResponseEntity<Boolean> check(@RequestHeader(AUTHORIZATION_HEADER) String auth):
+
+Request:
+
+```http request
+http://localhost:8080/api/auth/check
+```
+
+Header Authorization with bearer token.
+
+Response if token valid:
+
+```json
+true
+```
+
+Response if token invalid:
+
+```json
+false
+```
+
 ### UserController
+
+Для работы с данным контроллером пользователь должен быть авторизован в системе.
 
 #### GET ResponseEntity<UserDto> findById(@PathVariable("id") Long id):
 

@@ -8,27 +8,37 @@ import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.ReportingPolicy;
 
+/**
+ * Конвертер для преобразования между объектами пользовательского интерфейса и сущностями.
+ * <p>
+ * Этот интерфейс определяет методы для преобразования объектов типа {@link User},
+ * {@link UserDto}, {@link UserCreateDto} и {@link UserUpdateDto}.
+ */
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface UserConverter {
 
+    /**
+     * Преобразует объект типа {@link User} в объект типа {@link UserDto}.
+     *
+     * @param source исходный объект типа User.
+     * @return преобразованный объект типа UserDto.
+     */
     UserDto convert(User source);
 
     /**
-     * Преобразование объекта UserDto в объект User
+     * Преобразует объект типа {@link User} в объект типа {@link UserCreateDto}.
      *
-     * @param source исходный комментарий типа User
-     * @return преобразованный комментарий типа UserDto
-     */
-    User convert(UserDto source);
-
-    /**
-     * Преобразование объекта UserDto в объект UserCreateDto
-     *
-     * @param source исходный DTO для создания комментария типа UserCreateDto
-     * @return преобразованный комментарий типа User
+     * @param source исходный объект типа User, содержащий данные для создания.
+     * @return преобразованный объект типа UserCreateDto.
      */
     UserCreateDto convertToUser(User source);
 
+    /**
+     * Преобразует объект типа {@link UserCreateDto} в объект типа {@link User}.
+     *
+     * @param source исходный DTO для создания пользователя.
+     * @return преобразованный объект типа User.
+     */
     User convert(UserCreateDto source);
 
     /**
@@ -36,6 +46,7 @@ public interface UserConverter {
      *
      * @param user сущность {@link User}, которую нужно обновить.
      * @param dto  объект {@link UserUpdateDto}, содержащий данные для обновления.
+     * @return обновленная сущность User с данными из DTO.
      */
     User merge(@MappingTarget User user, UserUpdateDto dto);
 }

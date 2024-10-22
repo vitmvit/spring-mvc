@@ -8,6 +8,13 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+/**
+ * Контроллер обработки исключений.
+ * <p>
+ * Этот класс предназначен для перехвата и обработки исключений,
+ * возникающих в приложении, и формирования соответствующих
+ * ответов с информацией об ошибках.
+ */
 @RestControllerAdvice
 public class ExceptionHandlerController {
 
@@ -23,6 +30,12 @@ public class ExceptionHandlerController {
         return new ErrorDto(e.getMessage(), HttpStatus.NOT_FOUND.value());
     }
 
+    /**
+     * Обработчик исключений для недействительных JWT токенов.
+     *
+     * @param e исключение {@link InvalidJwtException}, содержащее информацию о причине ошибки.
+     * @return объект {@link ErrorDto} с сообщением об ошибке и статусом 500 (Internal Server Error).
+     */
     @ExceptionHandler(InvalidJwtException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorDto error(InvalidJwtException e) {
@@ -31,6 +44,9 @@ public class ExceptionHandlerController {
 
     /**
      * Общий обработчик исключений для всех остальных случаев.
+     * <p>
+     * Этот метод ловит все остальные исключения и возвращает общий
+     * ответ об ошибке.
      *
      * @param e общее исключение {@link Exception}, которое может произойти в приложении.
      * @return объект {@link ErrorDto} с сообщением об ошибке и статусом 500 (Internal Server Error).

@@ -9,6 +9,9 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import static by.vitikova.spring.mvc.constant.Constant.AUTHORIZATION_HEADER;
+import static by.vitikova.spring.mvc.constant.Constant.BEARER_PREFIX;
+
 /**
  * Контроллер для авторизации и аутентификации
  */
@@ -49,8 +52,8 @@ public class AuthController {
      * @throws JsonProcessingException если возникает ошибка при обработке токена
      */
     @PostMapping("/check")
-    public ResponseEntity<Boolean> check(@RequestHeader("Authorization") String auth) throws JsonProcessingException {
-        var token = auth.replace("Bearer ", "");
+    public ResponseEntity<Boolean> check(@RequestHeader(AUTHORIZATION_HEADER) String auth) throws JsonProcessingException {
+        var token = auth.replace(BEARER_PREFIX, "");
         return ResponseEntity.ok(authService.check(token));
     }
 }

@@ -1,8 +1,6 @@
 package by.vitikova.spring.mvc.model.entity;
 
-import by.vitikova.spring.mvc.constant.RoleName;
 import jakarta.persistence.*;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,9 +10,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
-
-import static by.vitikova.spring.mvc.constant.Constant.ADMIN_ROLE;
-import static by.vitikova.spring.mvc.constant.Constant.USER_ROLE;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Модель пользователя
@@ -24,7 +21,6 @@ import static by.vitikova.spring.mvc.constant.Constant.USER_ROLE;
 @Setter
 @Table(name = "users")
 @NoArgsConstructor
-@EqualsAndHashCode
 public class User implements UserDetails {
 
     @Id
@@ -33,30 +29,39 @@ public class User implements UserDetails {
 
     private String login;
     private String passwordHash;
-    private RoleName role;
 
-    /**
-     * Конструктор с параметрами.
-     *
-     * @param login        логин пользователя
-     * @param passwordHash пароль пользователя
-     * @param role         роль пользователя
-     */
-    public User(String login, String passwordHash, RoleName role) {
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "link_user_role",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id"),
+            foreignKey = @ForeignKey(name = "fk_user_to_role")
+    )
+    private Set<Role> roleList;
+
+    public User(String login, String passwordHash, Set<Role> roleList) {
         this.login = login;
         this.passwordHash = passwordHash;
-        this.role = role;
+        this.roleList = roleList;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        if (this.role == RoleName.ADMIN) {
-            return List.of(new SimpleGrantedAuthority(ADMIN_ROLE), new SimpleGrantedAuthority(USER_ROLE));
-        }
-        return List.of(new SimpleGrantedAuthority(USER_ROLE));
+//        if (this.role == RoleName.ADMIN) {
+//            return List.of(new SimpleGrantedAuthority(ADMIN_ROLE), new SimpleGrantedAuthority(USER_ROLE));
+//        }
+//        if (this.role == RoleName.JOURNALIST) {
+//            return List.of(new SimpleGrantedAuthority(JOURNALIST_ROLE), new SimpleGrantedAuthority(USER_ROLE));
+//        }
+//        if (this.role == RoleName.SUBSCRIBER) {
+//            return List.of(new SimpleGrantedAuthority(SUBSCRIBER_ROLE), new SimpleGrantedAuthority(USER_ROLE));
+//        }
+//        return List.of(new SimpleGrantedAuthority(USER_ROLE));
+
+        return this.getRoleList()
+                .stream()
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName().name()))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -69,33 +74,21 @@ public class User implements UserDetails {
         return login;
     }
 
-    /**
-     * /* {@inheritDoc}
-     */
     @Override
     public boolean isAccountNonExpired() {
         return true;
     }
 
-    /**
-     * /* {@inheritDoc}
-     */
     @Override
     public boolean isAccountNonLocked() {
         return true;
     }
 
-    /**
-     * /* {@inheritDoc}
-     */
     @Override
     public boolean isCredentialsNonExpired() {
         return true;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public boolean isEnabled() {
         return true;
