@@ -1,6 +1,7 @@
 package by.vitikova.spring.mvc.service.impl;
 
 import by.vitikova.spring.mvc.config.TokenProvider;
+import by.vitikova.spring.mvc.converter.RoleConverter;
 import by.vitikova.spring.mvc.converter.UserConverter;
 import by.vitikova.spring.mvc.exception.EntityNotFoundException;
 import by.vitikova.spring.mvc.exception.InvalidJwtException;
@@ -8,7 +9,9 @@ import by.vitikova.spring.mvc.model.dto.auth.JwtDto;
 import by.vitikova.spring.mvc.model.dto.auth.SignInDto;
 import by.vitikova.spring.mvc.model.dto.auth.SignUpDto;
 import by.vitikova.spring.mvc.model.entity.User;
+import by.vitikova.spring.mvc.repository.UserRepository;
 import by.vitikova.spring.mvc.service.AuthService;
+import by.vitikova.spring.mvc.service.RoleService;
 import by.vitikova.spring.mvc.service.UserService;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -20,17 +23,23 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import static by.vitikova.spring.mvc.constant.Constant.*;
 
 /**
  * Реализация сервиса аутентификации
  */
-@RequiredArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
-    private final UserService userClient;
+    private final UserService userService;
+    private final UserRepository userRepository;
+    private final RoleService roleService;
     private final UserConverter userConverter;
+    private final RoleConverter roleConverter;
     private final TokenProvider tokenProvider;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
@@ -49,12 +58,16 @@ public class AuthServiceImpl implements AuthService {
         if (!dto.password().equals(dto.passwordConfirm())) {
             throw new InvalidJwtException(PASSWORD_ERROR);
         }
-        if (Boolean.TRUE.equals(userClient.existsByLogin(dto.login()))) {
+        if (Boolean.TRUE.equals(userRepository.existsUserByLogin(dto.login()))) {
             throw new InvalidJwtException(USERNAME_IS_EXIST);
         }
-        String encryptedPassword = passwordEncoder.encode(dto.password());
-        User newUser = new User(dto.login(), encryptedPassword, dto.role());
-        userClient.create(userConverter.convertToUser(newUser));
+        var encryptedPassword = passwordEncoder.encode(dto.password());
+//        var roleSet = roleConverter.convert(dto.roleList());
+        var roleSet = dto.roleList().stream()
+                .map(roleDto -> roleService.findByName(roleDto.getName()))
+                .collect(Collectors.toSet());
+        var newUser = new User(dto.login(), encryptedPassword, roleSet);
+        userRepository.save(newUser);
         return buildJwt(dto.login(), dto.password());
     }
 
@@ -67,12 +80,16 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public JwtDto signIn(SignInDto dto) {
         try {
-            if (!userClient.existsByLogin(dto.login())) {
+            Optional<User> userOptional = userRepository.findByLogin(dto.login());
+            if (userOptional.isEmpty()) {
                 throw new InvalidJwtException(USERNAME_NOT_EXIST);
             }
-            return buildJwt(dto.login(), dto.passwordHash());
+            if (passwordEncoder.matches(dto.password(), userOptional.get().getPasswordHash())) {
+                return buildJwt(dto.login(), dto.password());
+            }
+            throw new InvalidJwtException("PIZDETC");
         } catch (Exception e) {
-            throw new EntityNotFoundException();
+            throw new EntityNotFoundException(e.getMessage());
         }
     }
 
@@ -95,7 +112,7 @@ public class AuthServiceImpl implements AuthService {
      */
     private boolean checkToken(String token) {
         try {
-            Algorithm algorithm = Algorithm.HMAC256(secretKey);
+            var algorithm = Algorithm.HMAC256(secretKey);
             JWT.require(algorithm)
                     .build()
                     .verify(token)

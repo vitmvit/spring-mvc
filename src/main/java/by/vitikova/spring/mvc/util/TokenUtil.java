@@ -1,12 +1,14 @@
 package by.vitikova.spring.mvc.util;
 
+import by.vitikova.spring.mvc.exception.ParseException;
 import by.vitikova.spring.mvc.model.entity.TokenPayload;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Base64;
+
+import static by.vitikova.spring.mvc.constant.Constant.PARSE_EXCEPTION;
 
 @Component
 public class TokenUtil {
@@ -19,7 +21,7 @@ public class TokenUtil {
      *
      * @param token строка, представляющая JWT токен
      * @return имя пользователя из токена
-     * @throws JsonProcessingException при возникновении ошибки при разборе JSON
+     * @throws ParseException при возникновении ошибки при разборе JSON
      */
     public String getUsername(String token) {
         try {
@@ -29,7 +31,7 @@ public class TokenUtil {
             TokenPayload tokenPayload = objectMapper.readValue(payload, TokenPayload.class);
             return tokenPayload.getUsername();
         } catch (Exception e) {
-            throw new RuntimeException();
+            throw new ParseException(PARSE_EXCEPTION);
         }
     }
 }

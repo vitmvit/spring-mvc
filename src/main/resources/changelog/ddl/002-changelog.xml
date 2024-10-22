@@ -3,10 +3,12 @@
                    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
-    <include file="/changelog/ddl/001-changelog.xml"/>
-    <include file="/changelog/ddl/002-changelog.xml"/>
-    <include file="/changelog/ddl/003-changelog.xml"/>
-    <include file="/changelog/ddl/004-changelog.xml"/>
-    <include file="/changelog/ddl/005-changelog.xml"/>
-    <include file="/changelog/dml/006-changelog.xml"/>
+
+    <changeSet id="001" author="vitikova" dbms="postgresql">
+        <sql>
+            DROP TABLE IF EXISTS "role";
+            DROP SEQUENCE IF EXISTS role_id_seq;
+            CREATE SEQUENCE role_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 9223372036854775807 CACHE 1;
+        </sql>
+    </changeSet>
 </databaseChangeLog>
