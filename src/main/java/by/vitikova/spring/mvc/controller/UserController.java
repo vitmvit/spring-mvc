@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static by.vitikova.spring.mvc.constant.Constant.AUTHORIZATION_HEADER;
+
 /**
  * Контроллер для управления пользователями.
  * <p>
@@ -78,14 +80,15 @@ public class UserController {
     /**
      * Обновляет информацию о существующем пользователе.
      *
+     * @param id              id обновления пользователя.
      * @param personUpdateDto Данные для обновления пользователя.
      * @return объект {@link ResponseEntity} с обновленным пользователем и статусом 200 (OK).
      */
-    @PutMapping
-    public ResponseEntity<UserDto> update(@RequestBody UserUpdateDto personUpdateDto) {
+    @PutMapping("/{id}")
+    public ResponseEntity<UserDto> update(@PathVariable("id") Long id, @RequestBody UserUpdateDto personUpdateDto) {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(userService.update(personUpdateDto));
+                .body(userService.update(id, personUpdateDto));
     }
 
     /**
@@ -97,6 +100,18 @@ public class UserController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(@PathVariable("id") Long id) {
         userService.deleteById(id);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    /**
+     * Обрабатывает запрос на выход пользователя (logout) из системы.
+     *
+     * @param auth токен аутентификации, переданный в заголовке запроса
+     * @return экземпляр {@link ResponseEntity}, представляющий ответ HTTP
+     */
+    @GetMapping("/logout")
+    public ResponseEntity<Void> logout(@RequestHeader(AUTHORIZATION_HEADER) String auth) {
+        userService.logout(auth);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

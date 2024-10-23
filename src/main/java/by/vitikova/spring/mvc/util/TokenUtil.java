@@ -34,4 +34,16 @@ public class TokenUtil {
             throw new ParseException(PARSE_EXCEPTION);
         }
     }
+
+    public Long getExt(String token) {
+        try {
+            String[] chinks = token.split("\\.");
+            Base64.Decoder decoder = Base64.getUrlDecoder();
+            String payload = new String(decoder.decode(chinks[1]));
+            TokenPayload tokenPayload = objectMapper.readValue(payload, TokenPayload.class);
+            return tokenPayload.getExp();
+        } catch (Exception e) {
+            throw new ParseException(PARSE_EXCEPTION);
+        }
+    }
 }

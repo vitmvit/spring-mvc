@@ -18,10 +18,10 @@ import java.util.Set;
 public class TokenPayload {
 
     private String username;
-    private Set<RoleName> role;
+    private Set<RoleName> roles;
 
     /**
      * Время валидности токена
      */
-    private Long ext;
+    private Long exp;
 }

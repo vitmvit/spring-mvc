@@ -7,10 +7,11 @@
     <changeSet id="001" author="vitikova" dbms="postgresql">
         <sql>
             DROP TABLE IF EXISTS "link_user_role";
-            CREATE TABLE "public"."link_user_role" (
-                                                       "role_id" bigint NOT NULL,
-                                                       "user_id" bigint NOT NULL,
-                                                       CONSTRAINT "link_user_role_pkey" PRIMARY KEY ("role_id", "user_id")
+            CREATE TABLE "public"."link_user_role"
+            (
+                "role_id" bigint NOT NULL,
+                "user_id" bigint NOT NULL,
+                CONSTRAINT "link_user_role_pkey" PRIMARY KEY ("role_id", "user_id")
             ) WITH (oids = false);
 
         </sql>

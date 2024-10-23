@@ -5,7 +5,7 @@ import by.vitikova.spring.mvc.model.dto.RoleDto;
 import java.util.Set;
 
 public record SignUpDto(
-        String login,
+        String username,
         String password,
         String passwordConfirm,
         Set<RoleDto> roleList

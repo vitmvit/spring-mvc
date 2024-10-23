@@ -12,13 +12,13 @@ public interface UserService {
 
     UserDto findById(Long id);
 
-    boolean existsByLogin(String login);
-
     List<UserDto> findAll();
 
     UserDto create(UserCreateDto dto);
 
-    UserDto update(UserUpdateDto dto);
+    UserDto update(Long id, UserUpdateDto dto);
 
     void deleteById(Long id);
+
+    void logout(String token);
 }

@@ -8,5 +8,6 @@
     <include file="/changelog/ddl/003-changelog.xml"/>
     <include file="/changelog/ddl/004-changelog.xml"/>
     <include file="/changelog/ddl/005-changelog.xml"/>
-    <include file="/changelog/dml/006-changelog.xml"/>
+    <include file="/changelog/ddl/006-changelog.xml"/>
+    <include file="/changelog/dml/007-changelog.xml"/>
 </databaseChangeLog>
