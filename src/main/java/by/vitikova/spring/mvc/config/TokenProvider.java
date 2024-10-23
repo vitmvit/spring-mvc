@@ -6,8 +6,6 @@ import by.vitikova.spring.mvc.model.entity.User;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -34,7 +32,7 @@ public class TokenProvider {
     /**
      * Генерирует токен доступа для пользователя.
      * <p>
-     * Этот метод создает JWT токен, содержащий информацию о пользователе, их роли
+     * Этот метод создает JWT токен, содержащий информацию о пользователе, его роли
      * и дату истечения срока действия токена.
      *
      * @param user Пользователь, для которого генерируется токен доступа.
@@ -54,12 +52,6 @@ public class TokenProvider {
                     .withClaim("roles", roles)
                     .withExpiresAt(genAccessExpirationDate())
                     .sign(algorithm);
-
-//            return Jwts.builder()
-//                    .setSubject(user.getUsername())
-//                    .claim("roles", roles)
-//                    .signWith(SignatureAlgorithm.HS256, jwtSecret)
-//                    .compact();
         } catch (JWTCreationException exception) {
             throw new JWTCreationException(GENERATION_TOKEN_ERROR, exception);
         }

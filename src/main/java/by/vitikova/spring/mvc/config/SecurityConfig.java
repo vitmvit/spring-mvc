@@ -1,14 +1,15 @@
 package by.vitikova.spring.mvc.config;
 
+import by.vitikova.spring.mvc.config.filter.SecurityFilter;
 import by.vitikova.spring.mvc.config.service.UserDetailsServiceImpl;
 import by.vitikova.spring.mvc.constant.RoleName;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -21,11 +22,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-
-import java.util.List;
-
-import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 /**
  * Конфигурация безопасности приложения.
@@ -38,19 +34,22 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 @EnableWebSecurity
 public class SecurityConfig {
 
-//    @Lazy
-//    @Autowired
-//    private  SecurityFilter securityFilter;
+    @Lazy
+    @Autowired
+    private SecurityFilter securityFilter;
 
     @Autowired
-    private UserDetailsServiceImpl userDetailsService;
+    private UserDetailsService userDetailsService;
 
     /**
-     * Настраивает элементы, которые будут игнорироваться системой безопасности.
+     * Настраивает правила безопасности для веб-приложения.
      * <p>
-     * В данном случае запросы к "/api/auth/" будут игнорироваться.
+     * Этот метод создает {@link WebSecurityCustomizer}, который игнорирует
+     * запросы, соответствующие заданному паттерну, в данном случае запросы
+     * к "/api/auth/**". Это позволяет избегать проверки безопасности
+     * для аутентификационных API.
      *
-     * @return объект {@link WebSecurityCustomizer} для настройки безопасности веб-приложения
+     * @return Настроенный {@link WebSecurityCustomizer}.
      */
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
@@ -69,48 +68,30 @@ public class SecurityConfig {
      * @return настроенная цепочка фильтров безопасности
      * @throws Exception если возникают проблемы с настройкой безопасности
      */
-//    @Bean
-//    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-//        http.csrf(AbstractHttpConfigurer::disable)
-//                // Своего рода отключение CORS (разрешение запросов со всех доменов)
-//                .cors(cors -> cors.configurationSource(request -> {
-//                    var corsConfiguration = new CorsConfiguration();
-//                    corsConfiguration.setAllowedOriginPatterns(List.of("*"));
-//                    corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-//                    corsConfiguration.setAllowedHeaders(List.of("*"));
-//                    corsConfiguration.setAllowCredentials(true);
-//                    return corsConfiguration;
-//                }))
-//                // Настройка доступа к конечным точкам
-//                .authorizeHttpRequests(request -> request
-//                        // Можно указать конкретный путь, * - 1 уровень вложенности, ** - любое количество уровней вложенности
-//                        .requestMatchers("/api/auth/**").permitAll()
-//                        .requestMatchers("/swagger-ui/**", "/swagger-resources/*", "/v3/api-docs/**").permitAll()
-//                        .requestMatchers("/api/users/me").hasRole("USER")
-//                        .requestMatchers("/api/users/**").hasRole("ADMIN")
-//                        .anyRequest().authenticated())
-//                .sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS))
-//                .authenticationProvider(authenticationProvider());
-////                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-//        return http.build();
-//    }
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
-//                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.GET, "/api/users/me").hasAnyRole(RoleName.ADMIN.name(), RoleName.USER.name())
-                        .requestMatchers(HttpMethod.GET, "/api/users/**").hasRole(RoleName.ADMIN.name())
-                        .requestMatchers(HttpMethod.POST, "/api/users/**").hasRole(RoleName.ADMIN.name())
-                        .requestMatchers(HttpMethod.PUT, "/api/users/**").hasRole(RoleName.ADMIN.name())
-                        .requestMatchers(HttpMethod.DELETE, "/api/users/**").hasRole(RoleName.ADMIN.name())
+                        .requestMatchers(HttpMethod.GET, "/api/users/logout").permitAll()
+                        .requestMatchers("/api/users/**").hasRole(RoleName.ADMIN.name())
                         .anyRequest().authenticated())
                 .authenticationProvider(authenticationProvider())
-//                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
+    /**
+     * Создает провайдер аутентификации, который использует
+     * {@link DaoAuthenticationProvider}. Провайдер настраивается
+     * с использованием {@link UserDetailsServiceImpl} и
+     * {@link PasswordEncoder}, что позволяет аутентифицировать
+     * пользователей на основе их учетных данных.
+     *
+     * @return Настроенный {@link AuthenticationProvider}.
+     */
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
@@ -119,42 +100,22 @@ public class SecurityConfig {
         return authProvider;
     }
 
+    /**
+     * Настраивает менеджер аутентификации.
+     * <p>
+     * Этот метод предоставляет {@link AuthenticationManager}
+     * из {@link AuthenticationConfiguration}, что позволяет
+     * управлять процессом аутентификации в приложении.
+     *
+     * @param config Конфигурация аутентификации.
+     * @return Настроенный {@link AuthenticationManager}.
+     * @throws Exception Если не удается получить менеджер аутентификации.
+     */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
 
-//    /**
-//     * Создает менеджер аутентификации.
-//     * <p>
-//     * Этот метод возвращает {@link AuthenticationManager}, который используется
-//     * для выполнения аутентификации пользователей.
-//     *
-//     * @param authenticationConfiguration объект {@link AuthenticationConfiguration} для настройки аутентификации
-//     * @return экземпляр {@link AuthenticationManager}
-//     * @throws Exception если возникают проблемы с созданием менеджера аутентификации
-//     */
-//    @Bean
-//    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-//        return authenticationConfiguration.getAuthenticationManager();
-//    }
-
-//    /**
-//     * Создание менеджера аутентификации.
-//     *
-//     * @param userDetailsService сервис пользователей
-//     * @param passwordEncoder    кодировщик пароля
-//     * @return менеджер аутентификации
-//     */
-//    @Bean
-//    public AuthenticationManager authenticationManager(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
-//        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
-//        authenticationProvider.setUserDetailsService(userDetailsService);
-//        authenticationProvider.setPasswordEncoder(passwordEncoder);
-//        return new ProviderManager(authenticationProvider);
-//    }
-//
-//
     /**
      * Создание кодировщика пароля.
      *

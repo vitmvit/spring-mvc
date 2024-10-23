@@ -10,8 +10,8 @@ import java.util.Set;
 @Setter
 public class UserCreateDto {
 
-    private String login;
-    private String passwordHash;
-    private String passwordHashConfirm;
+    private String username;
+    private String password;
+    private String passwordConfirm;
     private Set<Role> roleList;
 }

@@ -6,10 +6,11 @@
 
     <changeSet id="003" author="vitikova" dbms="postgresql">
         <sql>
-            CREATE TABLE "public"."role" (
-                                             "id" bigint DEFAULT nextval('role_id_seq') NOT NULL,
-                                             "name" character varying(255),
-                                             CONSTRAINT "role_pkey" PRIMARY KEY ("id")
+            CREATE TABLE "public"."role"
+            (
+                "id"   bigint DEFAULT nextval('role_id_seq') NOT NULL,
+                "name" character varying(255),
+                CONSTRAINT "role_pkey" PRIMARY KEY ("id")
             ) WITH (oids = false);
         </sql>
     </changeSet>

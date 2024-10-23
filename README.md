@@ -32,8 +32,24 @@
 
 ## Настройка и запуск:
 
-- Необходимо использовать PostgreSql в качестве бд. Также необходимо заранее создать таблицу spring-mvc.
-- Liquibase поднимет необходимые таблицы и первого пользователя на основе указанных changelog`ов.
+- Необходимо использовать PostgreSql в качестве бд. Также необходимо заранее создать бд spring-mvc.
+- Liquibase поднимет необходимые таблицы и роли на основе указанных changelog`ов.
+
+## Описание
+
+При регистрации (/singUp) пользователь создается и добавляется в бд, при этом возвращается токен, который необходимо
+передавать во всех запросах (кроме запросов контроллера /auth).
+
+В случае /logout, токен пользователя добавляется в черный список, что значит что пользователь разлогинился и повторно
+такой токен использовать нельзя. Для входа в систему необходимо снова залогиниться.
+
+Все токены, у которых истек срок действия, удаляются из черного списка шедулером, так как нет возможности исправить
+время жизни токена самостоятельно.
+
+### Роли:
+
+- USER (доступ только к /auth/** и /users/me)
+- ADMIN (доступ к /auth/** и /users/**)
 
 ## Реализация
 
@@ -51,10 +67,39 @@ Body:
 
 ```json
 {
-  "login": "user4@mail.com",
-  "passwordHash": "user4@mail.com",
-  "passwordHashConfirm": "user4@mail.com",
+  "username": "user@mail.com",
+  "password": "user@mail.com",
+  "passwordConfirm": "user@mail.com",
   "roleList": [
+    {
+      "name": "USER"
+    }
+  ]
+}
+```
+
+```json
+{
+  "username": "admin@mail.com",
+  "password": "admin@mail.com",
+  "passwordConfirm": "admin@mail.com",
+  "roleList": [
+    {
+      "name": "ADMIN"
+    }
+  ]
+}
+```
+
+```json
+{
+  "username": "user_admin@mail.com",
+  "password": "user_admin@mail.com",
+  "passwordConfirm": "user_admin@mail.com",
+  "roleList": [
+    {
+      "name": "ADMIN"
+    },
     {
       "name": "USER"
     }
@@ -66,7 +111,21 @@ Response:
 
 ```json
 {
-  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyNEBtYWlsLmNvbSIsInVzZXJuYW1lIjoidXNlcjRAbWFpbC5jb20iLCJyb2xlIjpbIlVTRVIiXSwiZXhwIjoxNzI3NTg5NjY5fQ.PsAdxWQEG3RHvQ4k1WcxQ6cdjdZSMHXy3y7MAriiZKU"
+  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyX2FkbWluQG1haWwuY29tIiwidXNlcm5hbWUiOiJ1c2VyX2FkbWluQG1haWwuY29tIiwicm9sZXMiOlsiQURNSU4iLCJVU0VSIl0sImV4cCI6MTcyOTcxMzQ2N30.RE6Mt7amIOJGl0p-zPbnhQRqE3aL3N6V6YTq38O_jF8"
+}
+```
+
+Payload token:
+
+```json
+{
+  "sub": "user_admin@mail.com",
+  "username": "user_admin@mail.com",
+  "roles": [
+    "ADMIN",
+    "USER"
+  ],
+  "exp": 1729713467
 }
 ```
 
@@ -82,8 +141,8 @@ Body:
 
 ```json
 {
-  "login": "user4@mail.com",
-  "passwordHash": "user4@mail.com"
+  "username": "user_admin@mail.com",
+  "password": "user_admin@mail.com"
 }
 ```
 
@@ -91,7 +150,7 @@ Response:
 
 ```json
 {
-  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyNEBtYWlsLmNvbSIsInVzZXJuYW1lIjoidXNlcjRAbWFpbC5jb20iLCJyb2xlIjpbIkFETUlOIl0sImV4cCI6MTcyNzU4OTc1M30.RIK-ouYj9Ro3DFvpfm-Jft4S8Ugs-9DjWoCKgk8tTPM"
+  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyX2FkbWluQG1haWwuY29tIiwidXNlcm5hbWUiOiJ1c2VyX2FkbWluQG1haWwuY29tIiwicm9sZXMiOlsiVVNFUiIsIkFETUlOIl0sImV4cCI6MTcyOTcxMzYxNX0.fyDX9AVTuOSsBZZRapQxKWW2TsYjRkpJQnRQcRNsoEc"
 }
 ```
 
@@ -133,13 +192,16 @@ Response:
 
 ```json
 {
-  "id": 1,
-  "name": "Name_one",
-  "surname": "Lastname_one",
-  "passport": {
-    "passportSeries": "FG",
-    "passportNumber": "7654322"
-  }
+  "id": "1",
+  "login": "user1@mail.com",
+  "roleList": [
+    {
+      "name": "ADMIN"
+    },
+    {
+      "name": "USER"
+    }
+  ]
 }
 ```
 
@@ -147,7 +209,7 @@ User not found:
 
 ```json
 {
-  "errorMessage": "User with id 12 not found: jakarta.persistence.NoResultException: No result found for query [SELECT p FROM user p WHERE p.id = :id]",
+  "errorMessage": "Entity not found",
   "errorCode": 404
 }
 ```
@@ -165,31 +227,34 @@ Response:
 ```json
 [
   {
-    "id": 1,
-    "name": "Name_one",
-    "surname": "Lastname_one",
-    "passport": {
-      "passportSeries": "FG",
-      "passportNumber": "7654322"
-    }
+    "id": "2",
+    "login": "user@mail.com",
+    "roleList": [
+      {
+        "name": "USER"
+      }
+    ]
   },
   {
-    "id": 2,
-    "name": "Name_two",
-    "surname": "Lastname_two",
-    "passport": {
-      "passportSeries": "FL",
-      "passportNumber": "7655392"
-    }
+    "id": "3",
+    "login": "admin@mail.com",
+    "roleList": [
+      {
+        "name": "ADMIN"
+      }
+    ]
   },
   {
-    "id": 4,
-    "name": "Name_two",
-    "surname": "Lastname_two",
-    "passport": {
-      "passportSeries": "FK",
-      "passportNumber": "7685392"
-    }
+    "id": "4",
+    "login": "user_admin@mail.com",
+    "roleList": [
+      {
+        "name": "USER"
+      },
+      {
+        "name": "ADMIN"
+      }
+    ]
   }
 ]
 ```
@@ -206,12 +271,17 @@ Body:
 
 ```json
 {
-  "name": "Name_two",
-  "surname": "Lastname_two",
-  "passport": {
-    "passportSeries": "FK",
-    "passportNumber": "7685392"
-  }
+  "username": "user_admin_2@mail.com",
+  "password": "user_admin_2@mail.com",
+  "passwordConfirm": "user_admin_2@mail.com",
+  "roleList": [
+    {
+      "name": "ADMIN"
+    },
+    {
+      "name": "USER"
+    }
+  ]
 }
 ```
 
@@ -219,21 +289,24 @@ Response:
 
 ```json
 {
-  "id": 4,
-  "name": "Name_two",
-  "surname": "Lastname_two",
-  "passport": {
-    "passportSeries": "FK",
-    "passportNumber": "7685392"
-  }
+  "id": "10",
+  "login": "user_admin_2@mail.com",
+  "roleList": [
+    {
+      "name": "ADMIN"
+    },
+    {
+      "name": "USER"
+    }
+  ]
 }
 ```
 
-Not unique passport:
+User is exists:
 
 ```json
 {
-  "errorMessage": "Create exception: org.hibernate.exception.ConstraintViolationException: could not execute statement [ERROR: duplicate key value violates unique constraint \"person_passport_series_passport_number_key\"\n  Detail: Key (passport_series, passport_number)=(FK, 7685392) already exists.] [/* insert for by.vitikova.spring.mvc.model.entity.User */insert into users (name,passport_number,passport_series,surname) values (?,?,?,?) returning id]",
+  "errorMessage": "Username is exists",
   "errorCode": 500
 }
 ```
@@ -243,20 +316,15 @@ Not unique passport:
 Request:
 
 ```http request
-http://localhost:8080/api/users
+http://localhost:8080/api/users/10
 ```
 
 Body:
 
 ```json
 {
-  "id": 4,
-  "name": "Name_three",
-  "surname": "Lastname_three",
-  "passport": {
-    "passportSeries": "FM",
-    "passportNumber": "7655395"
-  }
+  "id": 10,
+  "username": "user_admin_2@mail.com"
 }
 ```
 
@@ -264,22 +332,23 @@ Response:
 
 ```json
 {
-  "id": 4,
-  "name": "Name_three",
-  "surname": "Lastname_three",
-  "passport": {
-    "passportSeries": "FM",
-    "passportNumber": "7655395"
-  }
+  "id": "10",
+  "login": "user_admin_2@mail.com",
+  "roleList": [
+    {
+      "name": "ADMIN"
+    },
+    {
+      "name": "USER"
+    }
+  ]
 }
 ```
 
-#### DELETE delete(UUID uuid):
+#### DELETE ResponseEntity<Void> deleteById(@PathVariable("id") Long id):
 
 Request:
 
 ```http request
-http://localhost:8080/api/users/5
+http://localhost:8080/api/users/10
 ```
-
-__

@@ -9,9 +9,10 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static by.vitikova.spring.mvc.constant.Constant.ROLE_PREFIX;
 
 /**
  * Модель пользователя
@@ -19,8 +20,8 @@ import java.util.stream.Collectors;
 @Entity
 @Getter
 @Setter
-@Table(name = "users")
 @NoArgsConstructor
+@Table(name = "users")
 public class User implements UserDetails {
 
     @Id
@@ -47,20 +48,9 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-//        if (this.role == RoleName.ADMIN) {
-//            return List.of(new SimpleGrantedAuthority(ADMIN_ROLE), new SimpleGrantedAuthority(USER_ROLE));
-//        }
-//        if (this.role == RoleName.JOURNALIST) {
-//            return List.of(new SimpleGrantedAuthority(JOURNALIST_ROLE), new SimpleGrantedAuthority(USER_ROLE));
-//        }
-//        if (this.role == RoleName.SUBSCRIBER) {
-//            return List.of(new SimpleGrantedAuthority(SUBSCRIBER_ROLE), new SimpleGrantedAuthority(USER_ROLE));
-//        }
-//        return List.of(new SimpleGrantedAuthority(USER_ROLE));
-
         return this.getRoleList()
                 .stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName().name()))
+                .map(role -> new SimpleGrantedAuthority(ROLE_PREFIX + role.getName().name()))
                 .collect(Collectors.toList());
     }
 

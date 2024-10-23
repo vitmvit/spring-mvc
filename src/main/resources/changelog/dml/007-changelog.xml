@@ -4,11 +4,11 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <changeSet id="006" author="vitikova" dbms="postgresql">
+    <changeSet id="007" author="vitikova" dbms="postgresql">
         <sql>
             INSERT INTO "public"."role" ("name")
             VALUES ('ADMIN'),
-            ('USER');
+                   ('USER');
         </sql>
     </changeSet>
 </databaseChangeLog>

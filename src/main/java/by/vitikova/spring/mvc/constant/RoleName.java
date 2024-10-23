@@ -13,13 +13,4 @@ public enum RoleName {
 
     ADMIN,
     USER
-
-//    ADMIN("ADMIN"),
-//    USER("USER");
-//
-//    private final String role;
-//
-//    RoleName(String role) {
-//        this.role = role;
-//    }
 }

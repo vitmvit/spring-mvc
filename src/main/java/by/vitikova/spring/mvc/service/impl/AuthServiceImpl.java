@@ -1,18 +1,16 @@
 package by.vitikova.spring.mvc.service.impl;
 
 import by.vitikova.spring.mvc.config.TokenProvider;
-import by.vitikova.spring.mvc.converter.RoleConverter;
-import by.vitikova.spring.mvc.converter.UserConverter;
 import by.vitikova.spring.mvc.exception.EntityNotFoundException;
 import by.vitikova.spring.mvc.exception.InvalidJwtException;
 import by.vitikova.spring.mvc.model.dto.auth.JwtDto;
 import by.vitikova.spring.mvc.model.dto.auth.SignInDto;
 import by.vitikova.spring.mvc.model.dto.auth.SignUpDto;
 import by.vitikova.spring.mvc.model.entity.User;
+import by.vitikova.spring.mvc.repository.RoleRepository;
+import by.vitikova.spring.mvc.repository.TokenRepository;
 import by.vitikova.spring.mvc.repository.UserRepository;
 import by.vitikova.spring.mvc.service.AuthService;
-import by.vitikova.spring.mvc.service.RoleService;
-import by.vitikova.spring.mvc.service.UserService;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import lombok.RequiredArgsConstructor;
@@ -35,11 +33,9 @@ import static by.vitikova.spring.mvc.constant.Constant.*;
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
-    private final UserService userService;
     private final UserRepository userRepository;
-    private final RoleService roleService;
-    private final UserConverter userConverter;
-    private final RoleConverter roleConverter;
+    private final RoleRepository roleRepository;
+    private final TokenRepository tokenRepository;
     private final TokenProvider tokenProvider;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
@@ -53,22 +49,22 @@ public class AuthServiceImpl implements AuthService {
      * @param dto объект SignUpDto, содержащий данные для регистрации
      * @return объект JwtDto, содержащий JWT-токен
      */
+    @Override
     @Transactional
     public JwtDto signUp(SignUpDto dto) {
         if (!dto.password().equals(dto.passwordConfirm())) {
             throw new InvalidJwtException(PASSWORD_ERROR);
         }
-        if (Boolean.TRUE.equals(userRepository.existsUserByLogin(dto.login()))) {
+        if (Boolean.TRUE.equals(userRepository.existsUserByLogin(dto.username()))) {
             throw new InvalidJwtException(USERNAME_IS_EXIST);
         }
         var encryptedPassword = passwordEncoder.encode(dto.password());
-//        var roleSet = roleConverter.convert(dto.roleList());
         var roleSet = dto.roleList().stream()
-                .map(roleDto -> roleService.findByName(roleDto.getName()))
+                .map(roleDto -> roleRepository.findByName(roleDto.getName()).orElseThrow(EntityNotFoundException::new))
                 .collect(Collectors.toSet());
-        var newUser = new User(dto.login(), encryptedPassword, roleSet);
+        var newUser = new User(dto.username(), encryptedPassword, roleSet);
         userRepository.save(newUser);
-        return buildJwt(dto.login(), dto.password());
+        return buildJwt(dto.username(), dto.password());
     }
 
     /**
@@ -78,16 +74,18 @@ public class AuthServiceImpl implements AuthService {
      * @return объект JwtDto, содержащий JWT-токен
      */
     @Override
+    @Transactional
     public JwtDto signIn(SignInDto dto) {
         try {
-            Optional<User> userOptional = userRepository.findByLogin(dto.login());
+            tokenRepository.deleteByUsername(dto.username());
+            Optional<User> userOptional = userRepository.findByLogin(dto.username());
             if (userOptional.isEmpty()) {
                 throw new InvalidJwtException(USERNAME_NOT_EXIST);
             }
             if (passwordEncoder.matches(dto.password(), userOptional.get().getPasswordHash())) {
-                return buildJwt(dto.login(), dto.password());
+                return buildJwt(dto.username(), dto.password());
             }
-            throw new InvalidJwtException("PIZDETC");
+            throw new InvalidJwtException(INVALID_TOKEN_ERROR);
         } catch (Exception e) {
             throw new EntityNotFoundException(e.getMessage());
         }
